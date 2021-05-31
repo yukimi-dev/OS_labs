@@ -1,0 +1,68 @@
+#include <iostream>
+#include <thread>
+#include <unistd.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <fcntl.h>
+
+using namespace std;
+
+int flag1 = 0; // флаг завершения потока
+int flag2 = 0;
+int fd[2]; // идентификатор неименованного канала
+
+static void * thread1(void *arg) // функция потока 1
+{
+    int count = 0;// объявить буфер
+    cout << "Поток 1 starts" << endl;
+	while (flag1 == 0)
+	{
+		write(fd[1], &count, sizeof(int));// записать сообщение из буфера в неименованный канал;
+        	sleep(1);
+	count++;
+	}
+    cout << "Thread 1 ends" << endl;
+    return 0;
+}
+
+static void * thread2(void *arg)
+{
+    int count;// объявить буфер;
+    cout << "Thread 2 starts" << endl;
+    while (flag2 == 0) {
+        count = 0; // очистить буфер
+        int nr = read(fd[0], &count, sizeof(int)); // прочитать сообщение из неименованного канала в буфер;
+	if(nr > 0)
+	{
+	        cout << count << endl; // вывести сообщение на экран;
+	}
+	sleep(1);
+	}
+    close(fd[0]);
+    cout << "Thread 2 ends" << endl;
+    return 0;
+}
+
+
+
+int main()
+{
+setlocale(LC_ALL, "Russian");
+    cout << "Program starts" << endl;
+    pthread_t t1;
+    pthread_t t2;
+//    pipe(fd); // создать неименованный канал;
+//    pipe2(fd, O_NONBLOCK);
+    //fcntl(fd[0], F_SETFL, O_NONBLOCK);
+    pthread_create(&t1, NULL, thread1, NULL);
+    pthread_create(&t2, NULL, thread2, NULL);
+    cout << "Press any key" << endl;
+    getchar();
+    flag1 = 1;
+    flag2 = 1;
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    close(fd[1]);
+    close(fd[0]);
+    cout << "Program ends" << endl;
+}
