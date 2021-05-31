@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
+
+
+using namespace std;
+typedef struct {
+int flag;
+char sym;
+} targs;
+
+int id1, id2;
+int exitcode;
+
+
+
+static void * proc1(void *arg) {
+printf("Поток 1 начал работу \n");
+targs * args = (targs*) arg;
+args->flag;
+	while(args->flag==0) {
+printf("1");
+putchar(args->sym);
+fflush(stdout);
+usleep(100);}
+pthread_exit((void*)2);
+printf("Поток 1 закончил работу \n");
+};
+
+
+static void * proc2(void *arg) {
+printf("Поток 2 начал работу \n");
+targs * args = (targs*) arg;
+args->flag;
+	while(args->flag==0) {
+printf("2");
+putchar(args->sym);
+fflush(stdout);
+usleep(100);}
+printf("Поток 2 закончил работу \n");
+};
+
+int main()
+{
+printf("Программа начала работу \n");
+targs arg1;
+targs arg2;
+arg1.flag = 0;
+arg1.sym = '1';
+arg2.flag = 0;
+arg2.sym='2';
+
+int pthread_create(pthread_t id1, const pthread_attr_t targs, void proc1(), void *arg1); //создание потока
+int pthread_create(pthread_t id2, const pthread_attr_t targs, void proc2(), void *arg2); //создание потока
+
+
+printf("Программа ждёт нажатия клавиши \n");
+getchar();
+printf("Клавиша нажата \n");
+arg1.flag = 1;
+arg2.flag = 1;
+pthread_join(id1, (void**)&exitcode);
+printf("exitcode=%d\n", exitcode);
+pthread_join(id2, (void**)&exitcode);
+printf("Программа завершила работу \n");
+}
+
+
